@@ -1,5 +1,7 @@
 package com.lucamartinelli.app.travelsite.hotel.ejb;
 
+import java.sql.SQLException;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
@@ -18,12 +20,12 @@ public class HotelInMemoryEJB implements HotelEJB {
 	Logger log;
 	
 	@Override
-	public HotelVO getHotelInfo(String id) {
+	public HotelVO getHotelInfo(String id) throws SQLException{
 		return MockedDataHotels.getHotel(NumberUtils.toInt(id, 1));
 	}
 	
 	@Override
-	public HotelImagesVO getImages(String id) {
+	public HotelImagesVO getImages(String id) throws SQLException{
 		return MockedDataImages.getImages();
 	}
 	

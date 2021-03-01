@@ -45,7 +45,7 @@ public class HotelDAO {
 	
 	public HotelVO getInfo(String id) throws SQLException {
 		log.debug("Connecting to DB with id " + id);
-		final HotelVO hotelInfo = new HotelVO();
+		HotelVO hotelInfo = null;
 		
 		if (connection == null) {
 			log.error("Error during connection to DB");
@@ -56,6 +56,7 @@ public class HotelDAO {
 			ps.setString(1, id);
 			try (final ResultSet rs = ps.executeQuery()) {
 				if(rs.next()) {
+					hotelInfo = new HotelVO();
 					hotelInfo.setHotelID(rs.getString("HOTEL_ID"));
 					hotelInfo.setTitle(rs.getString("TITLE"));
 					hotelInfo.setLongDescription(rs.getString("LONG_DESCRIPTION"));
@@ -78,7 +79,7 @@ public class HotelDAO {
 	
 	public HotelImagesVO getImages(String id) throws SQLException {
 		log.debug("Connecting to DB with id " + id);
-		final HotelImagesVO hotelImg = new HotelImagesVO();
+		HotelImagesVO hotelImg = null;
 		
 		if (connection == null) {
 			log.error("Error during connection to DB");
@@ -93,6 +94,7 @@ public class HotelDAO {
 					imgs.add(rs.getString("IMAGE_SRC"));
 				}
 				if (imgs.size() > 0) {
+					hotelImg = new HotelImagesVO();
 					hotelImg.setHotelId(id);
 					hotelImg.setImages(imgs);
 				}

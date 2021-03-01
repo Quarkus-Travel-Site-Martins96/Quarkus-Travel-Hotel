@@ -22,28 +22,28 @@ public class HotelDBEJB implements HotelEJB {
 	
 	
 	@Override
-	public HotelVO getHotelInfo(String id) {
+	public HotelVO getHotelInfo(String id) throws SQLException{
 		log.debug("Get Hotel Info Service START");
 		final HotelDAO dao = CDI.current().select(HotelDAO.class, new Default.Literal()).get();
 		try {
 			return dao.getInfo(id);
 		} catch (SQLException e) {
 			log.error("Error in SQL query: ", e);
-			return null;
+			throw e;
 		} finally {
 			log.debug("Get Hotel Info Service END");
 		}
 	}
 	
 	@Override
-	public HotelImagesVO getImages(String id) {
+	public HotelImagesVO getImages(String id) throws SQLException{
 		log.debug("Get Hotel Images Service START");
 		final HotelDAO dao = CDI.current().select(HotelDAO.class).get();
 		try {
 			return dao.getImages(id);
 		} catch (SQLException e) {
 			log.error("Error in SQL query: ", e);
-			return null;
+			throw e;
 		} finally {
 			log.debug("Get Hotel Images Service END");
 		}

@@ -37,3 +37,13 @@ nb-configuration.xml
 
 # Local environment
 .env
+
+#compiled
+*.jar
+*.class
+*.tmp
+*.bin
+
+#Log files
+*.log
+/log

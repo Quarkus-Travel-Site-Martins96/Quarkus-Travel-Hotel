@@ -1,6 +1,7 @@
 package com.lucamartinelli.app.travelsite.hotel;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -74,16 +75,20 @@ public class Hotel {
 			return null;
 		}
 		
-		final HotelVO result =  ejb.getHotelInfo(id);
-		if (result == null) {
+		HotelVO result = null;
+		try {
+			result = ejb.getHotelInfo(id);
+		} catch (SQLException e) {
+			log.error("Error in get Hotel Info: " + e.getMessage());
 			try {
 				response.sendError(500);
 				return null;
-			} catch (IOException e) {
-				log.error("Error during setting status in Servlet response");
-				throw new RuntimeException(e);
+			} catch (IOException e1) {
+				log.error("Error during setting status in Servlet response", e1);
+				throw new RuntimeException(e1);
 			}
 		}
+		log.debug("Result for getting hotel data: " + result.toJSON());
 		
 		return result;
 	}
@@ -104,16 +109,20 @@ public class Hotel {
 			return null;
 		}
 		
-		final HotelImagesVO result =  ejb.getImages(id);
-		if (result == null) {
+		HotelImagesVO result = null;
+		try {
+			result = ejb.getImages(id);
+		} catch (SQLException e) {
+			log.error("Error in getting Hotel images " + e.getMessage());
 			try {
 				response.sendError(500);
 				return null;
-			} catch (IOException e) {
+			} catch (IOException e1) {
 				log.error("Error during setting status in Servlet response");
-				throw new RuntimeException(e);
+				throw new RuntimeException(e1);
 			}
 		}
+		log.debug("Result for getting hotel image: " + result.toJSON());
 		
 		return result;
 	}
