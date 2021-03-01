@@ -2,8 +2,11 @@ package com.lucamartinelli.app.travelsite.hotel;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletResponse;
@@ -15,6 +18,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.jboss.logging.Logger;
 
 import com.lucamartinelli.app.travelsite.hotel.ejb.HotelDBEJB;
@@ -23,7 +32,18 @@ import com.lucamartinelli.app.travelsite.hotel.ejb.HotelInMemoryEJB;
 import com.lucamartinelli.app.travelsite.hotel.vo.HotelImagesVO;
 import com.lucamartinelli.app.travelsite.hotel.vo.HotelVO;
 
+import io.smallrye.metrics.MetricRegistries;
+
+
+/**
+ * REST APIs manager and exposer class
+ * 
+ * @author Luca Martinelli
+ * @category REST APIs
+ *
+ */
 @Path("/hotel")
+@ApplicationScoped
 public class Hotel {
 	
 	private HotelEJB ejb = null;
@@ -39,6 +59,25 @@ public class Hotel {
 	
 	@Context
 	HttpServletResponse response;
+	
+	private MetricRegistry registry = MetricRegistries.get(MetricRegistry.Type.APPLICATION);
+	private static final Map<String, Counter> hotelsCounter = new HashMap<>();
+	
+	private void incCounterHotel(String hotelID) {
+		Counter counter = hotelsCounter.getOrDefault(hotelID, null);
+		if (counter == null) {
+			Metadata metadata = Metadata.builder()
+	                .withName("counter-hotel[" + hotelID + "]")
+	                .withType(MetricType.COUNTER)
+	                .withDescription("Views counter for hotel with id " + hotelID)
+	                .withDisplayName("Counter Hotel " + hotelID)
+	                .withUnit(MetricUnits.NONE)
+	                .build();
+			counter = registry.counter(metadata);
+		}
+		counter.inc();
+		hotelsCounter.put(hotelID, counter);
+	}
 	
 	@PostConstruct
 	public void init() {
@@ -60,11 +99,30 @@ public class Hotel {
 		}
 	}
 	
+	
+	//-------- REST -- SERVICE ----------
+	
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Path("/info/{hotelID}")
+	@Timed(name = "info-service-timer", absolute = true, displayName = "Info service Timer",
+			description = "Execution time for getInfo() service",
+			unit = MetricUnits.MILLISECONDS)
 	public HotelVO getInfo(@PathParam("hotelID") String id) {
 		log.debug("Requested hotel information with id " + id);
+		
+		if (id == null || id.isEmpty()) {
+			try {
+				response.sendError(403, "Wrong input");
+			} catch (IOException e) {
+				log.error("Error during setting status in Servlet response");
+				throw new RuntimeException(e);
+			}
+			return null;
+		}
+		
+		incCounterHotel(id);
+		
 		if (ejb == null) {
 			try {
 				response.sendError(503, "Service Unavailable. Wrong Configurations");
@@ -97,6 +155,9 @@ public class Hotel {
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Path("/images/{hotelID}")
+	@Timed(name = "images-service-timer", absolute = true, displayName = "Images service Timer",
+	description = "Execution time for getImage() service",
+	unit = MetricUnits.MILLISECONDS)
 	public HotelImagesVO getImages(@PathParam("hotelID") String id) {
 		log.debug("Requested hotel information with id " + id);
 		if (ejb == null) {

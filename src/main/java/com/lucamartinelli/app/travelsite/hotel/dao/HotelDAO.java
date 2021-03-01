@@ -14,6 +14,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.CDI;
 
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.jboss.logging.Logger;
 
 import com.lucamartinelli.app.travelsite.hotel.vo.HotelImagesVO;
@@ -43,6 +46,11 @@ public class HotelDAO {
 		}
 	}
 	
+	@Counted(name="db-iteration-info", displayName = "DB Iterations Hotel Info",
+			absolute = true, description = "Iterations with DB for Hotel Info")
+	@Timed(name="db-timer-info", displayName = "DB Timer Hotel Info",
+			absolute = true, description = "Hotel Info performance timer related to DB",
+			unit = MetricUnits.MILLISECONDS)
 	public HotelVO getInfo(String id) throws SQLException {
 		log.debug("Connecting to DB with id " + id);
 		HotelVO hotelInfo = null;
@@ -77,6 +85,11 @@ public class HotelDAO {
 	}
 	
 	
+	@Counted(name="db-iteration-images", displayName = "DB Iterations Hotel Images",
+			absolute = true, description = "Iterations with DB for Hotel Images")
+	@Timed(name="db-timer-images", displayName = "DB Timer Hotel Images",
+			absolute = true, description = "Hotel Info performance timer related to DB",
+			unit = MetricUnits.MILLISECONDS)
 	public HotelImagesVO getImages(String id) throws SQLException {
 		log.debug("Connecting to DB with id " + id);
 		HotelImagesVO hotelImg = null;
