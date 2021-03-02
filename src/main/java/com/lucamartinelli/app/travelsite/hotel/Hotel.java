@@ -146,7 +146,10 @@ public class Hotel {
 				throw new RuntimeException(e1);
 			}
 		}
-		log.debug("Result for getting hotel data: " + result.toJSON());
+		if (result == null)
+			log.debug("Result for getting hotel data is null");
+		else
+			log.debug("Result for getting hotel data: " + result.toJSON());
 		
 		return result;
 	}
@@ -183,7 +186,10 @@ public class Hotel {
 				throw new RuntimeException(e1);
 			}
 		}
-		log.debug("Result for getting hotel image: " + result.toJSON());
+		if (result == null)
+			log.debug("Result for getting hotel image is null");
+		else
+			log.debug("Result for getting hotel image: " + result.toJSON());
 		
 		return result;
 	}
