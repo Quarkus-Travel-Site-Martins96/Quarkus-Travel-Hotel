@@ -1,0 +1,22 @@
+<div class="content">
+	<div class="header" [style]="'background-image: url('+ hotel.previewImage + ');'">
+		<div _ngcontent-ohh-c12="" class="title">
+			<h1>{{ hotel.title }}</h1>
+		</div>
+	</div>
+	<div class="header2">
+		<div class="header2-content">
+			<div class="location">
+				<span > {{ hotel.location }}</span>
+			</div>
+			<div class="stars">
+				<span> <b>Stars:</b> <span
+					*ngFor="let i of fakeArray(hotel.stars)"> * </span>
+				</span>
+			</div>
+		</div>
+	</div>
+	<div class="body">
+		<div class="description" [innerHTML]="hotel.longDescription"></div>
+	</div>
+</div>

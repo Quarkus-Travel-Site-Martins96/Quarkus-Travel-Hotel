@@ -1,0 +1,18 @@
+.gallery-title {
+	margin-left: 5%;
+	margin-top: 50px;
+}
+
+.gallery {
+	background-color: white;
+	display: flex;
+	width: 98%;
+	padding: 10px 1%;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	flex-direction: row;
+}
+
+.image img {
+	max-height: 300px;
+}
