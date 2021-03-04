@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.CDI;
@@ -33,17 +32,13 @@ public class HotelDAO {
 	private static final String QUERY_HOTEL_INFO = "SELECT * FROM hotels WHERE HOTEL_ID = ?";
 	private static final String QUERY_HOTEL_IMAGES = "SELECT IMAGE_SRC FROM hotels_images WHERE HOTEL_ID = ?";
 	
-	private Connection connection = null;
+	private AgroalDataSource datasource = null;
 	
 	private Logger log = Logger.getLogger(getClass().getCanonicalName());
 	
 	@PostConstruct
 	void init() {
-		try {
-			connection = CDI.current().select(AgroalDataSource.class).get().getConnection();
-		} catch (SQLException e) {
-			log.error("Error during connection to DB: ", e);
-		}
+		datasource = CDI.current().select(AgroalDataSource.class).get();
 	}
 	
 	@Counted(name="db-iteration-info", displayName = "DB Iterations Hotel Info",
@@ -55,12 +50,13 @@ public class HotelDAO {
 		log.debug("Connecting to DB with id " + id);
 		HotelVO hotelInfo = null;
 		
-		if (connection == null) {
+		if (datasource == null) {
 			log.error("Error during connection to DB");
 			throw new SQLException(new ConnectException("Connection refused"));
 		}
 		
-		try (final PreparedStatement ps = connection.prepareStatement(QUERY_HOTEL_INFO)) {
+		try (Connection conn = datasource.getConnection();
+				final PreparedStatement ps = conn.prepareStatement(QUERY_HOTEL_INFO)) {
 			ps.setString(1, id);
 			try (final ResultSet rs = ps.executeQuery()) {
 				if(rs.next()) {
@@ -94,12 +90,13 @@ public class HotelDAO {
 		log.debug("Connecting to DB with id " + id);
 		HotelImagesVO hotelImg = null;
 		
-		if (connection == null) {
+		if (datasource == null) {
 			log.error("Error during connection to DB");
 			throw new SQLException(new ConnectException("Connection refused"));
 		}
 		
-		try (final PreparedStatement ps = connection.prepareStatement(QUERY_HOTEL_IMAGES)) {
+		try (Connection conn = datasource.getConnection();
+				final PreparedStatement ps = conn.prepareStatement(QUERY_HOTEL_IMAGES)) {
 			ps.setString(1, id);
 			try (final ResultSet rs = ps.executeQuery()) {
 				final List<String> imgs = new ArrayList<>();
@@ -121,17 +118,5 @@ public class HotelDAO {
 		
 		return hotelImg;
 	}
-	
-	
-	@PreDestroy
-	void onDestroy() {
-		try {
-			if (connection != null)
-				connection.close();
-		} catch(SQLException e) {
-			log.debug("Error during connection closure: ", e);
-		}
-	}
-	
 	
 }

@@ -26,6 +26,14 @@ export class RestService {
 		})
 	}
 	
+	sendPost<T>(url: string, body: any, headers: HttpHeaders): Observable<HttpResponse<T>> {
+		return this.http.post<T>(url, body, {
+			headers,
+			observe: 'response',
+			responseType: 'json'
+		});
+	}
+	
 	sendGet<T>(url: string, headers: HttpHeaders): Observable<HttpResponse<T>> {
 		return this.http.get<T>(url, {
 			headers,

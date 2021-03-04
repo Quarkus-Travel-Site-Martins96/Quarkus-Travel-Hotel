@@ -112,39 +112,24 @@ public class Hotel {
 		log.debug("Requested hotel information with id " + id);
 		
 		if (id == null || id.isEmpty()) {
-			try {
-				response.sendError(403, "Wrong input");
-			} catch (IOException e) {
-				log.error("Error during setting status in Servlet response");
-				throw new RuntimeException(e);
-			}
+			setError(403, "Wrong input");
 			return null;
 		}
 		
 		incCounterHotel(id);
 		
 		if (ejb == null) {
-			try {
-				response.sendError(503, "Service Unavailable. Wrong Configurations");
-			} catch (IOException e) {
-				log.error("Error during setting status in Servlet response");
-				throw new RuntimeException(e);
-			}
+			setError(503, "Service Unavailable. Wrong Configurations");
 			return null;
 		}
 		
 		HotelVO result = null;
 		try {
 			result = ejb.getHotelInfo(id);
-		} catch (SQLException e) {
+		} catch (SQLException | RuntimeException e) {
 			log.error("Error in get Hotel Info: " + e.getMessage());
-			try {
-				response.sendError(500);
-				return null;
-			} catch (IOException e1) {
-				log.error("Error during setting status in Servlet response", e1);
-				throw new RuntimeException(e1);
-			}
+			setError(500, null);
+			return null;
 		}
 		if (result == null)
 			log.debug("Result for getting hotel data is null");
@@ -164,12 +149,7 @@ public class Hotel {
 	public HotelImagesVO getImages(@PathParam("hotelID") String id) {
 		log.debug("Requested hotel information with id " + id);
 		if (ejb == null) {
-			try {
-				response.sendError(503, "Service Unavailable. Wrong Configurations");
-			} catch (IOException e) {
-				log.error("Error during setting status in Servlet response");
-				throw new RuntimeException(e);
-			}
+			setError(503, "Service Unavailable. Wrong Configurations");
 			return null;
 		}
 		
@@ -178,13 +158,12 @@ public class Hotel {
 			result = ejb.getImages(id);
 		} catch (SQLException e) {
 			log.error("Error in getting Hotel images " + e.getMessage());
-			try {
-				response.sendError(500);
-				return null;
-			} catch (IOException e1) {
-				log.error("Error during setting status in Servlet response");
-				throw new RuntimeException(e1);
-			}
+			setError(500, null);
+			return null;
+		} catch (RuntimeException e) {
+        	log.error("Error during execution getImages() ", e);
+        	setError(500, "Internal server error");
+        	return null;
 		}
 		if (result == null)
 			log.debug("Result for getting hotel image is null");
@@ -193,4 +172,14 @@ public class Hotel {
 		
 		return result;
 	}
+	
+	
+	private void setError(int error, String msg) {
+    	try {
+    		response.sendError(error, msg);
+		} catch (IOException e) {
+			log.error(e);
+			throw new RuntimeException(e);
+		}
+    }
 }
