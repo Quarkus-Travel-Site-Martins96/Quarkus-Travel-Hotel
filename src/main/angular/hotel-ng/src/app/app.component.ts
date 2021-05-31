@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { homePageUrl } from '../environments/environment'
+import { Environment } from '../environments/environment'
 
 @Component({
   selector: 'app-root',
@@ -14,7 +14,7 @@ export class AppComponent {
         let urlParams = new URLSearchParams(window.location.search);
         this.id = urlParams.get('hotel-id');
         if (!this.id) {
-            window.location.href = homePageUrl;
+            window.location.href = Environment.getHomeHost();
         }
     }
 	

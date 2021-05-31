@@ -1,11 +1,9 @@
 import { HttpHeaders } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { host } from '../../environments/environment';
+import { Environment } from '../../environments/environment';
 import { RestService } from '../rest-service';
 import { HotelVO } from '../vo/interface-objects';
-
-const hotelUrl = host + "/hotel/info/";
 
 @Component({
   selector: 'app-hotel-view',
@@ -13,6 +11,8 @@ const hotelUrl = host + "/hotel/info/";
   styleUrls: ['./hotel-view.component.css']
 })
 export class HotelViewComponent implements OnInit {
+	
+	private hotelUrl = Environment.getHotelHost() + "/hotel/info/";
 	
 	@Input()
 	hotelId: string;
@@ -29,7 +29,7 @@ export class HotelViewComponent implements OnInit {
         if (this.hotel || this.hotel === new HotelVO()) {
             if (this.sub)
                 this.sub.unsubscribe();
-            this.sub = this.rest.sendGet<HotelVO>(hotelUrl + this.hotelId, new HttpHeaders({
+            this.sub = this.rest.sendGet<HotelVO>(this.hotelUrl + this.hotelId, new HttpHeaders({
                 'content-type': 'application/json'
             })).subscribe(r => {
                 this.hotel = r.body;
