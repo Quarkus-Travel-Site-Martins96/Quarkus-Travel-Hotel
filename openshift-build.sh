@@ -2,4 +2,4 @@ cd src/main/angular/hotel-ng
 npm i
 ng build --prod
 cd ../../../..
-./mvnw package -DskipTests
+./mvnw clean package -Dquarkus.kubernetes.deploy=true -DskipTests
