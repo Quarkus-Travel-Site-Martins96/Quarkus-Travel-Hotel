@@ -27,7 +27,7 @@ public class HealthService implements HealthCheck {
 		return HealthCheckResponse.named("hotel-service-check")
 				.withData("Date", date)
 				.withData("Hotel mode", mode)
-				.state(configuredDone)
+				.status(configuredDone)
 				.build();
 	}
 
