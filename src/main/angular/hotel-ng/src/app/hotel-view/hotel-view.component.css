@@ -7,6 +7,7 @@
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
+	margin-top: -40px;
 }
 
 .header h1 {
@@ -40,3 +41,16 @@
 	margin: 10px;
 }
 
+.loading-image {
+	position: relative;
+    left: calc(50% - 100px);
+	width: fit-content;
+}
+
+.loading-image img {
+	width: 200px;
+}
+
+.content {
+	margin-top: 40px;
+}

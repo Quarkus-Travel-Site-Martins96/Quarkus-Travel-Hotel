@@ -1,6 +1,6 @@
-import { HttpHeaders } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { catchError, Subscription, throwError } from 'rxjs';
 import { Environment } from '../../environments/environment';
 import { RestService } from '../rest-service';
 import { HotelImagesVO } from '../vo/interface-objects';
@@ -33,16 +33,29 @@ export class GalleryViewComponent implements OnInit {
             this.sub = this.rest.sendGet<HotelImagesVO>(this.hotelUrl + this.hotelId, 
 				new HttpHeaders({
 	                'content-type': 'application/json'
-	            })).subscribe(r => {
-	                this.images = r.body;
-	            }, error => {
-	                console.error(error);
-	                this.error = error;
+	            })).pipe(
+                    catchError(err => {
+                        return this.handleError(err);
+                    })
+                ).subscribe(r => {
+                    if (!r || !r.body || r.body == null) {
+                        this.error = 'Invalid ID, hotel not found';
+                    } else if (r.ok) {
+                        this.error = undefined;
+                        console.log('Rest call finished');
+                        this.images = r.body;
+                    }
 	            });
         }
     }
 	
     fakeArray(i: any) {
         return new Array(i);
+    }
+
+    private handleError(err: HttpErrorResponse) {
+        console.error('Error during REST call for hotel details', err);
+        this.error = err.message;
+        return throwError(() => new Error(this.error));
     }
 }

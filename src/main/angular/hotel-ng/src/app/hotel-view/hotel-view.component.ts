@@ -1,6 +1,6 @@
-import { HttpHeaders } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { catchError, retry, Subscription, throwError } from 'rxjs';
 import { Environment } from '../../environments/environment';
 import { RestService } from '../rest-service';
 import { HotelVO } from '../vo/interface-objects';
@@ -20,26 +20,48 @@ export class HotelViewComponent implements OnInit {
 	sub: Subscription;
 	error: string;
 	hotel: HotelVO;
+
+    isLoading: boolean;
 	
     constructor(private rest: RestService) {
         this.rest = rest;
         this.hotel = new HotelVO();
     }
     ngOnInit() {
+        this.isLoading = true;
+        console.log('Starting REST call');
         if (this.hotel || this.hotel === new HotelVO()) {
             if (this.sub)
                 this.sub.unsubscribe();
             this.sub = this.rest.sendGet<HotelVO>(this.hotelUrl + this.hotelId, new HttpHeaders({
                 'content-type': 'application/json'
-            })).subscribe(r => {
-                this.hotel = r.body;
-            }, error => {
-                console.error(error);
-                this.error = error;
+            })).pipe(
+                retry(3),
+                catchError(err => {
+                    this.isLoading = false;
+                    return this.handleError(err);
+                })
+            )
+            .subscribe(r => {
+                if (!r || !r.body || r.body == null) {
+                    this.error = 'Invalid ID, hotel not found';
+                    this.isLoading = false;
+                } else if (r.ok) {
+                    this.error = undefined;
+                    console.log('Rest call finished');
+                    this.isLoading = false;
+                    this.hotel = r.body;
+                }
             });
         }
     }
     fakeArray(i: any) {
         return new Array(i);
+    }
+
+    private handleError(err: HttpErrorResponse) {
+        console.error('Error during REST call for hotel details', err);
+        this.error = err.message;
+        return throwError(() => new Error(this.error));
     }
 }

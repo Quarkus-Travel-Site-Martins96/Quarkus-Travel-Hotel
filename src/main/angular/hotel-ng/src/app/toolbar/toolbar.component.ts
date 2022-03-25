@@ -1,6 +1,6 @@
-import { HttpHeaders } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { catchError, Subscription, throwError } from 'rxjs';
 import { Environment } from 'src/environments/environment';
 import { CookieManager } from '../cookie-utils';
 import { RestService } from '../rest-service';
@@ -38,20 +38,13 @@ export class ToolbarComponent implements OnInit, AfterViewInit {
 			//JWT found, check if is valid
 			this.sub = this.rest.sendPost<JWT>(this.validateUrl, this.cookieJWT, new HttpHeaders({
 				'content-type': 'text/plain'
-			}))
-				.subscribe((resp) => {
+			})).pipe(
+                catchError(this.handleError)
+			).subscribe((resp) => {
 					//JWT correct, move to Home Page
+					console.log('JWT loaded');
 					this.jwt = resp.body;
-				}, error => {
-					//JWT non correct or service not available
-					if (error.status === 401) {
-						console.error('The token JWT is not valid, relogin required', error)
-						this.logout();
-					} else {
-						console.error('The call is not end correct', error)
-						this.jwt = null;
-					}
-				})
+			})
 		}
 	}
 
@@ -72,5 +65,17 @@ export class ToolbarComponent implements OnInit, AfterViewInit {
 		this.cookieMng.deleteCookie('user.jwt');
 		window.top.location.href = this.homeUrl;
 	}
+
+	private handleError(err: HttpErrorResponse) {
+		//JWT non correct or service not available
+		if (err.status === 401) {
+			console.error('The token JWT is not valid, relogin required', err)
+			this.logout();
+		} else {
+			console.error('The call is not end correct', err)
+			this.jwt = null;
+		}
+        return throwError(() => new Error(err.message));
+    }
 
 }
