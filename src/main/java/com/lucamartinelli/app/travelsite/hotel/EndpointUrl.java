@@ -55,6 +55,12 @@ public class EndpointUrl {
 		return conf.getOptionalValue("endpoint.home", String.class).orElse("http://localhost:7071");
 	}
 	
+	@GET
+	@Path("/registration")
+	public String getRegistration() {
+		return conf.getOptionalValue("endpoint.registration", String.class).orElse("http://localhost:7171");
+	}
+	
 	
 	
 	
